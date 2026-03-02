@@ -1,0 +1,3087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZIPCushions — Custom Cushion Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<!-- Customizer Styles -->
+<style>
+  :root {
+    --brand-dark: #2c3e2d;
+    --brand-green: #3a5a3c;
+    --brand-light: #f7f5f0;
+    --brand-cream: #ebe7df;
+    --brand-accent: #c8553d;
+    --brand-accent-hover: #b04530;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5a5a5a;
+    --text-muted: #8a8a8a;
+    --border: #d4d0c8;
+    --border-light: #e8e4dc;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--brand-light);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .configurator {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 20px 120px;
+  }
+
+  /* ── Price Bar (sticky) ── */
+  .price-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--brand-dark);
+    margin: 0 -20px 28px;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-lg);
+  }
+  .price-bar__label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .price-bar__amount {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  /* ── Step Sections ── */
+  .step {
+    background: var(--white);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+  .step:hover { box-shadow: var(--shadow-sm); }
+
+  .step__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--white);
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .step.open .step__header {
+    border-bottom-color: var(--border-light);
+    background: #fafaf7;
+  }
+  .step__header:hover { background: #fafaf7; }
+
+  .step__title-group { display: flex; align-items: center; gap: 12px; }
+
+  .step__number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--brand-green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .step__subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .step__toggle {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+  .step.open .step__toggle { transform: rotate(180deg); }
+  .step__toggle svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-muted);
+  }
+
+  .step__body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.25, 0, 0.15, 1);
+  }
+  .step.open .step__body { max-height: 2000px; }
+
+  .step__content { padding: 24px; }
+
+  .step__note {
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: #f5f3ee;
+    border-left: 3px solid var(--brand-green);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* ── Dropdown Selects ── */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .field__label .req { color: var(--brand-accent); }
+
+  .field__select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .field__select:hover { border-color: var(--brand-green); }
+  .field__select:focus {
+    outline: none;
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgba(58,90,60,0.1);
+  }
+  .field__select[readonly] {
+    background: #f5f3ee;
+    color: var(--text-muted);
+    border-style: dashed;
+    cursor: default;
+  }
+  .field__select[readonly]:hover,
+  .field__select[readonly]:focus { border-color: var(--border); box-shadow: none; }
+  .dim-group + .dim-group { margin-top: 0; }
+
+  .field__help {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 12px;
+  }
+  .field__help a {
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ── Image Option Cards ── */
+  .option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .option-grid--2col { }
+  .option-grid--4col { }
+
+  .option-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px 12px;
+    background: var(--white);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 110px;
+    flex: 0 0 auto;
+  }
+  .option-card:hover {
+    border-color: var(--brand-green);
+    background: #f9faf7;
+  }
+  .option-card.selected {
+    border-color: var(--brand-green);
+    background: #f0f4ee;
+    box-shadow: 0 0 0 1px var(--brand-green);
+  }
+  .option-card.selected::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    background: var(--brand-green);
+    border-radius: 50%;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='8' viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4L3.5 6.5L9 1' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .option-card__img {
+    width: 72px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .option-card__placeholder {
+    width: 72px;
+    height: 56px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .option-card__placeholder--foam { background: #dde8f0; color: #4a7fa5; }
+  .option-card__placeholder--fiber { background: #f0ece4; color: #8a7d6b; }
+  .option-card__placeholder--dryfast { background: #f5e0d8; color: #b06a50; }
+  .option-card__placeholder--covers { background: #e8e8e0; color: #6a6a5a; }
+
+  .option-card__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ── Zipper specific ── */
+  .option-card__placeholder--zipper {
+    width: 72px;
+    height: 56px;
+    border-radius: 6px;
+    background: #f0ece4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option-card__placeholder--zipper svg {
+    width: 48px;
+    height: 36px;
+  }
+
+  /* ── Piping / Anti-skid ── */
+  .options-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .options-group__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .options-group__title .req { color: var(--brand-accent); }
+
+  /* ── Ties grid ── */
+  .ties-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 600px) {
+    .ties-grid { grid-template-columns: repeat(3, 1fr); }
+    .field-row { grid-template-columns: 1fr; }
+    .options-split { grid-template-columns: 1fr; }
+  }
+
+  .option-card--tie {
+    min-width: unset;
+    padding: 10px 8px 8px;
+  }
+  .option-card--tie .option-card__placeholder {
+    width: 56px;
+    height: 44px;
+    background: #dde5e8;
+    border-radius: 6px;
+    color: #4a6a7a;
+    font-size: 18px;
+  }
+  .option-card--tie .option-card__label {
+    font-size: 11px;
+  }
+
+  /* ── Fabric Wrapper ── */
+  #GSFabricWrapper {
+    min-height: 200px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    background: #fafaf7;
+    flex-direction: column;
+  }
+
+  /* ── Step 5: Special Instructions ── */
+  .instructions-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .instructions-area textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    transition: border-color 0.15s ease;
+  }
+  .instructions-area textarea:focus {
+    outline: none;
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgba(58,90,60,0.1);
+  }
+  .instructions-area textarea::placeholder { color: var(--text-muted); }
+
+  .file-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .file-upload__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand-green);
+    background: var(--white);
+    border: 1.5px solid var(--brand-green);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .file-upload__btn:hover {
+    background: #f0f4ee;
+  }
+  .file-upload__btn svg { width: 16px; height: 16px; }
+  .file-upload__hint {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .file-upload input[type="file"] { display: none; }
+
+  /* ── Bottom CTA ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--white);
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .bottom-bar__price {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    color: var(--text-primary);
+  }
+  .btn-add-cart {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 40px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--brand-accent);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    letter-spacing: 0.3px;
+  }
+  .btn-add-cart:hover {
+    background: var(--brand-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  .btn-add-cart:active { transform: translateY(0); }
+
+  /* ── Quantity ── */
+  .qty-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .qty-btn {
+    width: 36px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafaf7;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-secondary);
+    transition: background 0.1s;
+  }
+  .qty-btn:hover { background: #f0eeea; }
+  .qty-input {
+    width: 44px;
+    height: 40px;
+    text-align: center;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--white);
+  }
+  .qty-input:focus { outline: none; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .section-label .req { color: var(--brand-accent); }
+
+  /* ── Info tooltip ── */
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--brand-green);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: help;
+    flex-shrink: 0;
+  }
+</style>
+
+<!-- Fabric Selector Styles -->
+<style>
+  /* Base wrapper styles */
+  #GSFabricWrapper { 
+    font-family: Arial, sans-serif !important; 
+    background: #f1f1f1 !important; 
+    position: relative !important; 
+    min-height: 600px !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+  }
+  
+  #GSFabricWrapper * { 
+    box-sizing: border-box !important; 
+  }
+  
+  /* Top Bar with Search and Catalog */
+  #GSFabricWrapper .gs-top-bar {
+    width: 100% !important;
+    display: flex !important;
+    gap: 15px !important;
+    align-items: center !important;
+    position: sticky !important;
+    top: 40px !important;
+    z-index: 99 !important;
+    padding: 15px 10px !important;
+    background: #f1f1f1 !important;
+  }
+  
+  #GSFabricWrapper .gs-search-wrapper {
+    flex: 1 !important;
+    position: relative !important;
+  }
+  
+  #GSFabricWrapper .gs-search-input {
+    width: 100% !important;
+    padding: 12px 45px 12px 15px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    font-size: 15px !important;
+    outline: none !important;
+    background: #ffffff !important;
+  }
+  
+  #GSFabricWrapper .gs-search-input:focus {
+    border-color: #00bcd4 !important;
+  }
+  
+  #GSFabricWrapper .gs-search-icon {
+    position: absolute !important;
+    right: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #666 !important;
+    font-size: 18px !important;
+    pointer-events: none !important;
+  }
+  
+  #GSFabricWrapper .gs-catalog-filter {
+    width:150px !important;
+    padding: 8px 15px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    font-size: 15px !important;
+    background: white !important;
+    max-width: 200px !important;
+    cursor: pointer !important;
+    outline: none !important;
+  }
+  
+  /* Horizontal Filters Bar - Sticky */
+  #GSFabricWrapper .gs-filters-bar {
+    display: flex !important;
+    gap: 5px !important;
+    align-items: center !important;
+    margin-bottom: 10px !important;
+    padding: 10px!important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    flex-wrap: wrap !important;
+    position: sticky !important;
+    top: 110px !important;
+    background: #f1f1f1 !important;
+    z-index: 98 !important;
+  }
+  
+  #GSFabricWrapper .gs-clear-filters {
+    background: transparent !important;
+    color: #333 !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    text-decoration: underline !important;
+    transition: color 0.3s !important;
+    display: none !important;
+  }
+  
+  #GSFabricWrapper .gs-clear-filters.show {
+    display: block !important;
+  }
+  
+  #GSFabricWrapper .gs-clear-filters:hover {
+    color: #00bcd4 !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-dropdown {
+    position: relative !important;
+    max-width: 150px;
+  }
+  
+  #GSFabricWrapper .gs-filter-button {
+    padding: 10px 35px 10px 15px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    background: white !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    min-width: 140px !important;
+    text-align: left !important;
+    position: relative !important;
+    transition: border-color 0.3s !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-button:hover {
+    border-color: #00bcd4 !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-button.active {
+    border-color: #00bcd4 !important;
+    background: #f0f9ff !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-button::after {
+    content: '' !important;
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 10px !important;
+    color: #666 !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    margin-top: 5px !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    min-width: 130px !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+    display: none !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-dropdown-menu.show {
+    display: block !important;
+  }
+  
+#GSFabricWrapper .gs-filter-option {
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: background 0.2s !important;
+  padding: 10px 15px !important;
+}
+
+#GSFabricWrapper .gs-filter-option:hover {
+  background: #f5f5f5 !important;
+}
+
+#GSFabricWrapper .gs-filter-option input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+#GSFabricWrapper .gs-filter-option label {
+  cursor: pointer !important;
+  font-size: 14px !important;
+  color: #555 !important;
+  flex: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  user-select: none !important;
+}
+  
+  /* Main Layout */
+  #GSFabricWrapper .gs-main-layout {
+    width: 100% !important;
+    display: flex !important;
+    gap: 20px !important;
+    position: relative !important;
+    padding:10px;
+  }
+  
+  /* Content Area */
+  #GSFabricWrapper .gs-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  
+  #GSFabricWrapper .gs-result-info {
+    text-align: center !important;
+    color: #666 !important;
+    font-size: 14px !important;
+    margin: 10px 0 20px 0 !important;
+    font-weight: 500 !important;
+  }
+  
+  #GSFabricWrapper .gs-fabric-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    gap: 15px !important;
+    margin-bottom: 30px !important;
+  }
+  
+#GSFabricWrapper .gs-fabric-card {
+  background: #fff !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  padding: 2px !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#GSFabricWrapper .gs-fabric-card:hover {
+  border-color: red !important;
+  box-shadow: 0 8px 20px rgba(0, 188, 212, 0.15) !important;
+  transform: translateY(-4px) !important;
+  z-index: 10 !important;
+}
+
+#GSFabricWrapper .gs-fabric-card.selected {
+  border: 2px solid red !important;
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.1), 
+              0 8px 24px rgba(0, 188, 212, 0.25) !important;
+  transform: translateY(-2px) !important;
+  z-index: 5 !important;
+}
+
+#GSFabricWrapper .gs-fabric-card > img {
+  width: 100% !important;
+  height: 120px !important;
+  object-fit: cover !important;
+  border-radius: 6px !important;
+  display: block !important;
+  background: #f9fafb !important;
+  transition: transform 0.3s ease !important;
+  image-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+#GSFabricWrapper .gs-tooltip-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 999999 !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip {
+  position: fixed !important;
+  width: 240px !important;
+  max-width: 90vw !important;
+  background: white !important;
+  border-radius: 5px !important;
+  padding: 6px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(0, 188, 212, 0.1) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease !important;
+  transform: scale(0.95) !important;
+  pointer-events: auto !important;
+  margin-bottom: 15px !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip.show {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: scale(1) !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip img {
+  width: 100% !important;
+  height: 250px !important;
+  object-fit: cover !important;
+  border-radius: 4px !important;
+  margin-bottom: 5px !important;
+  display: block !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  image-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip .gs-fabric-name-tooltip {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  text-align: center !important;
+  padding: 10 5 !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+  text-align: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 20 !important;
+  height: 20 !important;
+  transform: rotate(45deg) !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip[data-position="top"]::after {
+  bottom: -10px !important;
+  background: white !important;
+  z-index: 2 !important;
+}
+
+#GSFabricWrapper .gs-fabric-card-tooltip[data-position="bottom"]::after {
+  top: -10px !important;
+  background: white !important;
+  z-index: -2 !important;
+}
+
+#GSFabricWrapper .gs-fabric-card img.gs-lazy-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%) !important;
+  background-size: 200% 100% !important;
+  animation: gs-skeleton-pulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes gs-skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+#GSFabricWrapper .gs-featured-sidebar {
+  width: 280px !important;
+  flex-shrink: 0 !important;
+  position: sticky !important;
+  top: 140px !important;
+  align-self: flex-start !important;
+  display:none;
+}
+
+#GSFabricWrapper .gs-featured-card {
+  background: #fff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  text-align: center !important;
+}
+
+#GSFabricWrapper .gs-featured-image {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 400px !important;
+  object-fit: contain !important;
+  border-radius: 6px !important;
+  margin-bottom: 15px !important;
+  background: #fff !important;
+}
+
+#GSFabricWrapper .gs-featured-name {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  margin-bottom: 10px !important;
+  line-height: 1.4 !important;
+}
+
+#GSFabricWrapper .gs-featured-catalog {
+  font-size: 13px !important;
+  color: #666 !important;
+  margin-bottom: 5px !important;
+}
+
+#GSFabricWrapper .gs-catalog-description {
+  border-radius: 8px !important;
+  padding: 20px 0 !important;
+  text-align: center !important;
+  color: #555 !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+}
+
+#GSFabricWrapper .gs-loader-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(255,255,255,0.95) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+}
+
+#GSFabricWrapper .gs-loader-overlay.show {
+  display: flex !important;
+}
+
+#GSFabricWrapper .gs-loader-content {
+  text-align: center !important;
+}
+
+#GSFabricWrapper .gs-loader-spinner {
+  width: 60px !important;
+  height: 60px !important;
+  border: 4px solid #f3f3f3 !important;
+  border-top: 4px solid #00bcd4 !important;
+  border-radius: 50% !important;
+  animation: gs-spin 1s linear infinite !important;
+  margin: 0 auto 15px !important;
+}
+
+#GSFabricWrapper .gs-loader-text {
+  color: #333 !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+
+@keyframes gs-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 1024px) {
+  #GSFabricWrapper .gs-featured-sidebar {
+    width: 100% !important;
+    position: relative !important;
+    top: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #GSFabricWrapper {
+    padding: 0px !important;
+  }
+  
+  #GSFabricWrapper .gs-top-bar {
+    top: 40 !important;
+  }
+  #GSFabricWrapper input[type="text"]{
+    height: 35px !important;
+  }
+  #GSFabricWrapper .gs-search-icon{
+    font-size: 12px !important;
+    right: 10px !important;
+  }
+  #GSFabricWrapper .gs-search-input{
+    font-size: 12px !important;
+  }
+  #GSFabricWrapper .gs-catalog-filter {
+    width: 120px !important;
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+  }
+  
+  #GSFabricWrapper .gs-filter-button {
+    font-size: 12px !important;
+    padding: 8px 30px 8px 5px !important;
+    min-width: 100px !important;
+    white-space: nowrap !important;
+  }
+  
+  #GSFabricWrapper .gs-fabric-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+  }
+  
+  #GSFabricWrapper .gs-fabric-card img {
+    height: 100px !important;
+  }
+  
+  #GSFabricWrapper .gs-fabric-name-tooltip {
+    font-size: 9px !important;
+    padding: 6px 0px !important;
+  }
+  
+  #GSFabricWrapper .gs-main-layout {
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 500px) {
+  #GSFabricWrapper .gs-filters-bar {
+    padding:0px 5px !important;
+    padding-bottom: 10px !important;
+    display: grid !important;
+    gap: 5px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+   #GSFabricWrapper .gs-catalog-filter {
+    width: 100px !important;
+  }
+}
+
+#GSFabricWrapper .gs-catalog-filter.gs-hidden {
+  display: none !important;
+}
+
+#GSFabricWrapper .gs-top-bar.gs-single-catalog .gs-search-wrapper {
+  max-width: 100% !important;
+}
+
+@media (max-width: 350px){
+    #GSFabricWrapper .gs-filters-bar {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    #GSFabricWrapper .gs-top-bar {
+    flex-direction: column !important;
+    }
+        #GSFabricWrapper .gs-catalog-filter {
+        width: 100px !important;
+        }
+            #GSFabricWrapper .gs-fabric-grid {
+        gap: 5px !important;
+    }
+}
+
+
+
+/* Best Seller Buttons */
+#GSFabricWrapper .gs-bestseller-buttons {
+  display: none !important;
+  gap: 10px !important;
+  margin-bottom: 20px !important;
+  justify-content: center !important;
+}
+
+#GSFabricWrapper .gs-bestseller-buttons.show {
+  display: flex !important;
+}
+
+#GSFabricWrapper .gs-bestseller-btn {
+  padding: 12px 24px !important;
+  border: 2px solid #ddd !important;
+  border-radius: 6px !important;
+  background: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  transition: all 0.3s !important;
+}
+
+#GSFabricWrapper .gs-bestseller-btn:hover {
+  border-color: #000 !important;
+}
+
+#GSFabricWrapper .gs-bestseller-btn.active {
+  border-color: #fff !important;
+  background: #000 !important;
+  color: white !important;
+}
+
+@media (max-width: 500px) {
+  #GSFabricWrapper .gs-bestseller-buttons {
+    flex-direction: column !important;
+  }
+  
+  #GSFabricWrapper .gs-bestseller-btn {
+    width: 100% !important;
+  }
+}
+#GSFabricWrapper .gs-bestseller-btn.gs-hidden {
+  display: none !important;
+}
+</style>
+</head>
+<body>
+
+<div class="configurator" id="cushionConfigurator">
+
+  <!-- ── Price Bar ── -->
+  <div class="price-bar">
+    <span class="price-bar__label">Estimated Price</span>
+    <span class="price-bar__amount" id="priceDisplay">$18.50</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 1: Shape -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="1">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">1</span>
+        <div>
+          <div class="step__title">Choose Cushion Shape</div>
+          <div class="step__subtitle">Select the shape that matches your cushion.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+        <div class="option-grid" id="shapeOptions">
+          <div class="option-card selected" data-option="shape" data-value="rect" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><rect x="8" y="10" width="56" height="28" rx="3" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">Rectangle</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="round" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><ellipse cx="36" cy="24" rx="26" ry="18" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">Round</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="lshape" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="8,7 38,7 38,23 56,23 56,41 8,41" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">L-Shape</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="tshape" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="8,7 64,7 64,21 42,21 42,41 30,41 30,21 8,21" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">T-Cushion</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="tapered" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="16,40 56,40 62,8 10,8" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">Tapered</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="90triangle" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="8,40 64,40 8,8" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">90° Triangle</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="etriangle" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="36,6 66,42 6,42" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">Triangle</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="trapezium" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><polygon points="18,8 54,8 64,40 8,40" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/></svg>
+            </div>
+            <span class="option-card__label">Trapezium</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="bolster" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><rect x="16" y="15" width="40" height="18" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/><ellipse cx="16" cy="24" rx="8" ry="9" stroke="#3a5a3c" stroke-width="2" fill="#b0ccb0"/><ellipse cx="56" cy="24" rx="8" ry="9" stroke="#3a5a3c" stroke-width="2" fill="#b0ccb0"/></svg>
+            </div>
+            <span class="option-card__label">Bolster</span>
+          </div>
+          <div class="option-card" data-option="shape" data-value="semiround" onclick="selectOption(this)">
+            <div class="option-card__placeholder" style="background:#e8f0e4; color:#3a5a3c;">
+              <svg viewBox="0 0 72 48" fill="none"><path d="M8 40 A28 28 0 0 1 64 40 Z" stroke="#3a5a3c" stroke-width="2" fill="#c8ddc8"/><line x1="8" y1="40" x2="64" y2="40" stroke="#3a5a3c" stroke-width="2"/></svg>
+            </div>
+            <span class="option-card__label">Semi-Round</span>
+          </div>
+        </div>
+        <input type="hidden" id="selectedShape" name="properties[Shape]" value="Rectangle">
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 2: Dimensions -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="2">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">2</span>
+        <div>
+          <div class="step__title">Enter Cushion Dimensions</div>
+          <div class="step__subtitle" id="dimSubtitle">Carefully measure your cushion for a perfect fit.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+
+        <!-- Rectangle: Length, Width, Thickness -->
+        <div class="dim-group" id="dims-rect">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3" value="10" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-width" type="number" min="3" value="10" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tapered: Length, Bottom Width, Top Width, Thickness, Angled Side (auto) -->
+        <div class="dim-group" id="dims-tapered" style="display:none">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3"  value="20" oninput="updateAngledSide(); calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Bottom Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-bottom-width" type="number" min="3"  value="18" oninput="updateAngledSide(); calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Top Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-top-width" type="number" min="3"  value="12" oninput="updateAngledSide(); calculatePrice()">
+            </div>
+          </div>
+          <div class="field-row" style="margin-top:16px; grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Angled Side (in) <span class="info-icon" title="Auto-calculated from Length and widths">auto</span></label>
+              <input class="field__select dim-angled-side" type="text" readonly placeholder="Auto-calculated">
+            </div>
+          </div>
+        </div>
+
+        <!-- T-Cushion: Length, Bottom Width, Top Width, Ear, Thickness -->
+        <div class="dim-group" id="dims-tshape" style="display:none">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3"  value="24" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Bottom Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-bottom-width" type="number" min="3"  value="20" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Top Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-top-width" type="number" min="3"  value="14" oninput="calculatePrice()">
+            </div>
+          </div>
+          <div class="field-row" style="margin-top:16px; grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Ear (in) <span class="req">*</span></label>
+              <input class="field__select dim-ear" type="number" min="1" max="60" value="6" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- L-Shape: Length, Bottom Width, Top Width, Ear, Thickness -->
+        <div class="dim-group" id="dims-lshape" style="display:none">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3"  value="24" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Bottom Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-bottom-width" type="number" min="3"  value="20" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Top Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-top-width" type="number" min="3"  value="14" oninput="calculatePrice()">
+            </div>
+          </div>
+          <div class="field-row" style="margin-top:16px; grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Ear (in) <span class="req">*</span></label>
+              <input class="field__select dim-ear" type="number" min="1" max="60" value="6" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Round: Diameter, Thickness -->
+        <div class="dim-group" id="dims-round" style="display:none">
+          <div class="field-row" style="grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Diameter (in) <span class="req">*</span></label>
+              <input class="field__select dim-diameter" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 90° Triangle: Length, Width, Thickness -->
+        <div class="dim-group" id="dims-90triangle" style="display:none">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-width" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Triangle (Equilateral): Side, Thickness -->
+        <div class="dim-group" id="dims-etriangle" style="display:none">
+          <div class="field-row" style="grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Side (in) <span class="req">*</span></label>
+              <input class="field__select dim-side" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Trapezium: Length, Bottom Width, Top Width, Thickness, Angled Side (auto) -->
+        <div class="dim-group" id="dims-trapezium" style="display:none">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3" value="20" oninput="updateTrapeziumAngledSide(); calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Bottom Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-bottom-width" type="number" min="3" value="18" oninput="updateTrapeziumAngledSide(); calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Top Width (in) <span class="req">*</span></label>
+              <input class="field__select dim-top-width" type="number" min="3" value="12" oninput="updateTrapeziumAngledSide(); calculatePrice()">
+            </div>
+          </div>
+          <div class="field-row" style="margin-top:16px; grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Angled Side (in) <span class="info-icon" title="Auto-calculated — used as Length if greater">auto</span></label>
+              <input class="field__select dim-angled-side" type="text" readonly placeholder="Auto-calculated">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bolster: Length, Diameter -->
+        <div class="dim-group" id="dims-bolster" style="display:none">
+          <div class="field-row" style="grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Length (in) <span class="req">*</span></label>
+              <input class="field__select dim-length" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Diameter (in) <span class="req">*</span></label>
+              <input class="field__select dim-diameter" type="number" min="3" max="30" value="6" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Semi-Round: Diameter, Thickness -->
+        <div class="dim-group" id="dims-semiround" style="display:none">
+          <div class="field-row" style="grid-template-columns: 1fr 1fr">
+            <div class="field">
+              <label class="field__label">Diameter (in) <span class="req">*</span></label>
+              <input class="field__select dim-diameter" type="number" min="3"  value="18" oninput="calculatePrice()">
+            </div>
+            <div class="field">
+              <label class="field__label">Thickness (in) <span class="req">*</span></label>
+              <input class="field__select dim-thickness" type="number" min="1" max="12" value="2" oninput="calculatePrice()">
+            </div>
+          </div>
+        </div>
+
+        <p class="field__help">
+          Can't find the size you're looking for? <a href="#" onclick="return false;">Contact our customer support via chat</a> (blue button on the bottom)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 3: Fill Type -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="3">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">3</span>
+        <div>
+          <div class="step__title">Choose Foam or Fiberfill</div>
+          <div class="step__subtitle">Select based on your cushion's location and use.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+        <div class="step__note">
+          Fiber filling cushion thickness is measured from the center of the cushion where it is most fluffy. Sides of the cushion will be a little smaller.
+        </div>
+        <div class="section-label">Fill <span class="info-icon">?</span> <span class="req">*</span></div>
+        <div class="option-grid" id="fillOptions">
+          <div class="option-card selected" data-option="fill" data-value="HighDensityFoam" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--foam">🧱</div>
+            <span class="option-card__label">High Density<br>Foam</span>
+          </div>
+          <div class="option-card" data-option="fill" data-value="FiberFill" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--fiber">☁️</div>
+            <span class="option-card__label">Fiber Fill</span>
+          </div>
+          <div class="option-card" data-option="fill" data-value="DryFastFoam" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--dryfast">💧</div>
+            <span class="option-card__label">Dry Fast<br>Foam</span>
+          </div>
+          <div class="option-card" data-option="fill" data-value="CoversOnly" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--covers">📐</div>
+            <span class="option-card__label">Covers Only</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 4: Fabric -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="4">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">4</span>
+        <div>
+          <div class="step__title">Select Your Fabric</div>
+          <div class="step__subtitle">Select based on your cushion's location and use.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+        <!-- Fabric selector injected here by GSheet integration -->
+        <!-- The fabricsection.liquid dispatches 'fabricSelected' event on this div -->
+        <div id="GSFabricWrapper">
+          Fabric selector will load here...
+        </div>
+        <!-- Hidden fields to capture fabric data for cart line item properties -->
+        <input type="hidden" id="selectedFabricName" name="properties[Fabric Name]" value="">
+        <input type="hidden" id="selectedFabricPrice" name="properties[Fabric Price]" value="">
+        <input type="hidden" id="selectedFabricSKU" name="properties[Fabric SKU]" value="">
+        <input type="hidden" id="selectedFabricCatalog" name="properties[Fabric Catalog]" value="">
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 5: Customizations -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="5">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">5</span>
+        <div>
+          <div class="step__title">More Customizations</div>
+          <div class="step__subtitle">Choose piping, ties, or zippers for added charm and functionality.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+        <div class="step__note">
+          <strong>Please note:</strong> All product measurements exclude the piping. Choosing piping can add up to 0.5" to the overall cushion.
+        </div>
+
+        <!-- Zipper Position -->
+        <div class="section-label">Zipper Position <span class="info-icon">?</span> <span class="req">*</span></div>
+        <div class="option-grid" id="zipperOptions" style="margin-bottom: 28px;">
+          <div class="option-card selected" data-option="zipper" data-value="BackLongSide" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--zipper">
+              <svg viewBox="0 0 72 40" fill="none"><rect x="4" y="4" width="64" height="32" rx="3" stroke="#6a6a5a" stroke-width="1.5" fill="#f5f3ee"/><line x1="4" y1="36" x2="68" y2="36" stroke="#c8553d" stroke-width="2.5" stroke-dasharray="4 2"/></svg>
+            </div>
+            <span class="option-card__label">Back Long side</span>
+          </div>
+          <div class="option-card" data-option="zipper" data-value="FrontLongSide" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--zipper">
+              <svg viewBox="0 0 72 40" fill="none"><rect x="4" y="4" width="64" height="32" rx="3" stroke="#6a6a5a" stroke-width="1.5" fill="#f5f3ee"/><line x1="4" y1="4" x2="68" y2="4" stroke="#c8553d" stroke-width="2.5" stroke-dasharray="4 2"/></svg>
+            </div>
+            <span class="option-card__label">Front Long side</span>
+          </div>
+          <div class="option-card" data-option="zipper" data-value="LeftShortSide" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--zipper">
+              <svg viewBox="0 0 72 40" fill="none"><rect x="4" y="4" width="64" height="32" rx="3" stroke="#6a6a5a" stroke-width="1.5" fill="#f5f3ee"/><line x1="4" y1="4" x2="4" y2="36" stroke="#c8553d" stroke-width="2.5" stroke-dasharray="4 2"/></svg>
+            </div>
+            <span class="option-card__label">Left Short Side</span>
+          </div>
+          <div class="option-card" data-option="zipper" data-value="RightShortSide" onclick="selectOption(this)">
+            <div class="option-card__placeholder option-card__placeholder--zipper">
+              <svg viewBox="0 0 72 40" fill="none"><rect x="4" y="4" width="64" height="32" rx="3" stroke="#6a6a5a" stroke-width="1.5" fill="#f5f3ee"/><line x1="68" y1="4" x2="68" y2="36" stroke="#c8553d" stroke-width="2.5" stroke-dasharray="4 2"/></svg>
+            </div>
+            <span class="option-card__label">Right Short Side</span>
+          </div>
+        </div>
+
+        <!-- Piping & Anti-skid row -->
+        <div class="options-split" style="margin-bottom: 28px;">
+          <div>
+            <div class="options-group__title">Piping <span class="info-icon">?</span> <span class="req">*</span></div>
+            <div class="option-grid" id="pipingOptions">
+              <div class="option-card selected" data-option="piping" data-value="no_pipe" onclick="selectOption(this)">
+                <div class="option-card__placeholder" style="background:#e8e4dc; color:#7a7a6a;">✕</div>
+                <span class="option-card__label">No Piping</span>
+              </div>
+              <div class="option-card" data-option="piping" data-value="piping" onclick="selectOption(this)">
+                <div class="option-card__placeholder" style="background:#dde5e8; color:#4a6a7a;">〰</div>
+                <span class="option-card__label">Piping</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="options-group__title">Anti Skid <span class="info-icon">?</span> <span class="req">*</span></div>
+            <div class="option-grid" id="antiskidOptions">
+              <div class="option-card selected" data-option="antiskid" data-value="no_anti_skid" onclick="selectOption(this)">
+                <div class="option-card__placeholder" style="background:#e8e4dc; color:#7a7a6a;">✕</div>
+                <span class="option-card__label">No Anti Skid</span>
+              </div>
+              <div class="option-card" data-option="antiskid" data-value="anti_skid" onclick="selectOption(this)">
+                <div class="option-card__placeholder" style="background:#d5d5ca; color:#5a5a4a;">▤</div>
+                <span class="option-card__label">Anti Skid</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ties -->
+        <div class="section-label">Ties <span class="info-icon">?</span> <span class="req">*</span></div>
+        <div class="ties-grid" id="tiesOptions">
+          <div class="option-card option-card--tie selected" data-option="ties" data-value="no_ties" onclick="selectOption(this)">
+            <div class="option-card__placeholder">✕</div>
+            <span class="option-card__label">No Ties</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">②</div>
+            <span class="option-card__label">4 Short Sides</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_4" onclick="selectOption(this)">
+            <div class="option-card__placeholder">④</div>
+            <span class="option-card__label">4 Long Sides</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_4" onclick="selectOption(this)">
+            <div class="option-card__placeholder">◇</div>
+            <span class="option-card__label">4 Corners</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">◈</div>
+            <span class="option-card__label">2 Corners</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">⇥</div>
+            <span class="option-card__label">2 Short Sides</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">⇤</div>
+            <span class="option-card__label">2 Long Side</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">⇔</div>
+            <span class="option-card__label">2 Short Sides Center</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_2" onclick="selectOption(this)">
+            <div class="option-card__placeholder">⇔</div>
+            <span class="option-card__label">2 Long Sides Center</span>
+          </div>
+          <div class="option-card option-card--tie" data-option="ties" data-value="ties_8" onclick="selectOption(this)">
+            <div class="option-card__placeholder">⊞</div>
+            <span class="option-card__label">2 Long Sides Corners</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- STEP 5: Special Design Instructions -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="step open" data-step="5">
+    <div class="step__header" onclick="toggleStep(this)">
+      <div class="step__title-group">
+        <span class="step__number">5</span>
+        <div>
+          <div class="step__title">Special Design Instructions</div>
+          <div class="step__subtitle">Include specific design requests or upload reference images.</div>
+        </div>
+      </div>
+      <div class="step__toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="step__content">
+        <p style="font-size:14px; color:var(--text-secondary); text-align:center; margin-bottom:16px;">
+          Provide design details or upload image for a Perfect Fit
+        </p>
+        <div class="instructions-area">
+          <div>
+            <div class="section-label">Images (Optional)</div>
+            <div class="file-upload">
+              <label class="file-upload__btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choose file
+                <input type="file" id="fileUpload" accept=".png,.jpg,.jpeg,.gif,.pdf,.doc" multiple>
+              </label>
+              <span class="file-upload__hint">png, jpg, jpeg, gif, pdf, doc</span>
+            </div>
+          </div>
+          <div>
+            <div class="section-label">Comments / Instructions</div>
+            <textarea id="comments" placeholder="Let us know if you have any special instructions or design requirements..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.configurator -->
+
+<!-- ── Bottom CTA Bar ── -->
+<div class="bottom-bar">
+  <div class="qty-wrapper">
+    <button class="qty-btn" onclick="changeQty(-1)">−</button>
+    <input class="qty-input" type="number" id="qtyInput" value="1" min="1" max="99">
+    <button class="qty-btn" onclick="changeQty(1)">+</button>
+  </div>
+  <span class="bottom-bar__price" id="priceDisplayBottom">$18.50</span>
+  <button class="btn-add-cart" id="btnAddToCart">Add to Cart</button>
+</div>
+
+<script>
+
+// ═══════════════════════════════════════════════
+// Accordion toggle
+// ═══════════════════════════════════════════════
+function toggleStep(header) {
+  header.closest('.step').classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════
+// Option card selection (radio-style per group)
+// ═══════════════════════════════════════════════
+function selectOption(card) {
+  const group = card.dataset.option;
+  const container = card.parentElement;
+
+  container.querySelectorAll(`.option-card[data-option="${group}"]`).forEach(c => {
+    c.classList.remove('selected');
+  });
+  card.classList.add('selected');
+
+  if (group === 'shape') {
+    updateDimensionFields(card.dataset.value);
+    return; // updateDimensionFields calls calculatePrice
+  }
+  calculatePrice();
+}
+
+// ═══════════════════════════════════════════════
+// DIMENSION PANEL SWITCHING
+// ═══════════════════════════════════════════════
+const DIM_SUBTITLES = {
+  rect:       'Enter Length, Width, and Thickness.',
+  tapered:    'Enter Length, Bottom Width, Top Width, and Thickness. Angled side is auto-calculated.',
+  tshape:     'Enter Length, Bottom Width, Top Width, Ear, and Thickness.',
+  lshape:     'Enter Length, Bottom Width, Top Width, Ear, and Thickness.',
+  round:      'Enter Diameter and Thickness.',
+  '90triangle': 'Enter Length, Width, and Thickness.',
+  etriangle:  'Enter Side length and Thickness.',
+  trapezium:  'Enter Length, Bottom Width, Top Width, and Thickness. Angled side is auto-calculated and used as Length if greater.',
+  bolster:    'Enter Length and Diameter.',
+  semiround:  'Enter Diameter and Thickness.',
+};
+
+function updateDimensionFields(shape) {
+  document.querySelectorAll('.dim-group').forEach(g => { g.style.display = 'none'; });
+  const panel = document.getElementById('dims-' + shape);
+  if (panel) panel.style.display = '';
+  const sub = document.getElementById('dimSubtitle');
+  if (sub) sub.textContent = DIM_SUBTITLES[shape] || 'Carefully measure your cushion for a perfect fit.';
+  if (shape === 'tapered')   updateAngledSide();
+  if (shape === 'trapezium') updateTrapeziumAngledSide();
+  calculatePrice();
+}
+
+function updateAngledSide() {
+  const panel = document.getElementById('dims-tapered');
+  if (!panel) return;
+  const length = parseFloat(panel.querySelector('.dim-length')?.value) || 0;
+  const bw     = parseFloat(panel.querySelector('.dim-bottom-width')?.value) || 0;
+  const tw     = parseFloat(panel.querySelector('.dim-top-width')?.value) || 0;
+  const angled = Math.sqrt(length * length + Math.pow(bw - tw, 2));
+  const el = panel.querySelector('.dim-angled-side');
+  if (el) el.value = angled > 0 ? angled.toFixed(2) : '';
+}
+
+function updateTrapeziumAngledSide() {
+  const panel = document.getElementById('dims-trapezium');
+  if (!panel) return;
+  const length = parseFloat(panel.querySelector('.dim-length')?.value) || 0;
+  const bw     = parseFloat(panel.querySelector('.dim-bottom-width')?.value) || 0;
+  const tw     = parseFloat(panel.querySelector('.dim-top-width')?.value) || 0;
+  const angled = Math.sqrt(length * length + Math.pow(bw - tw, 2));
+  const el = panel.querySelector('.dim-angled-side');
+  if (el) el.value = angled > 0 ? angled.toFixed(2) : '';
+}
+
+function getDimensions(shape) {
+  const panel = document.getElementById('dims-' + shape);
+  if (!panel) return { cLength: 8, cWidth: 8, cHeight: 2 };
+
+  const iv  = cls => parseInt(panel.querySelector(cls)?.value) || 0;
+  // DPO normalization: values in [3, 8) clamp to 8
+  const n   = v => (v >= 3 && v < 8) ? 8 : v;
+  const nm  = (a, b) => { const m = Math.max(a, b); return n(m); };
+
+  const length      = iv('.dim-length');
+  const width       = iv('.dim-width');
+  const diameter    = iv('.dim-diameter');
+  const bottomWidth = iv('.dim-bottom-width');
+  const topWidth    = iv('.dim-top-width');
+  const side        = iv('.dim-side');
+  const height      = iv('.dim-thickness');
+
+  // cLength formula (mirrors DPO additive pattern — one shape is active at a time)
+  const cLength =
+    (shape === 'rect'       ? n(length)    : 0) +
+    (shape === 'round'      ? n(diameter)  : 0) +
+    (shape === 'trapezium'  ? n(Math.max(length, Math.sqrt(length * length + Math.pow(bottomWidth - topWidth, 2)))) : 0) +
+    (shape === 'tshape'     ? n(length)    : 0) +
+    (shape === 'lshape'     ? n(length)    : 0) +
+    (shape === 'etriangle'  ? n(side)      : 0) +
+    (shape === '90triangle' ? n(length)    : 0) +
+    // remaining shapes — same normalisation pattern
+    (shape === 'tapered'    ? n(length)    : 0) +
+    (shape === 'bolster'    ? n(length)    : 0) +
+    (shape === 'semiround'  ? n(diameter)  : 0);
+
+  // cWidth formula (mirrors DPO)
+  const cWidth =
+    (shape === 'rect'       ? n(width)                  : 0) +
+    (shape === 'round'      ? n(diameter)               : 0) +
+    (shape === 'trapezium'  ? nm(bottomWidth, topWidth)  : 0) +
+    (shape === 'tshape'     ? n(topWidth)               : 0) +
+    (shape === 'lshape'     ? nm(bottomWidth, topWidth)  : 0) +
+    (shape === 'etriangle'  ? n(side)                   : 0) +
+    (shape === '90triangle' ? n(width)                  : 0) +
+    // remaining shapes
+    (shape === 'tapered'    ? nm(bottomWidth, topWidth)  : 0) +
+    (shape === 'bolster'    ? n(diameter)               : 0) +
+    (shape === 'semiround'  ? n(Math.ceil(diameter / 2)): 0);
+
+  // cHeight — raw thickness for all shapes; bolster uses diameter as its height
+  const cHeight = (shape === 'bolster') ? diameter : height;
+
+  return { cLength, cWidth, cHeight };
+}
+
+// ═══════════════════════════════════════════════
+// FABRIC PRICE INTEGRATION
+// ═══════════════════════════════════════════════
+// The fabricsection.liquid selectFabric() function needs ONE addition
+// at the end (after saveFabricStateToCache):
+//
+//   wrapper.dispatchEvent(new CustomEvent('fabricSelected', {
+//     bubbles: true,
+//     detail: {
+//       name: fabricName,
+//       price: fabricPrice,
+//       sku: fabricSKU,
+//       catalog: fabricCatalog,
+//       data: fabricData
+//     }
+//   }));
+//
+// This replaces the updateInputsWithRetry() DPO integration.
+// ═══════════════════════════════════════════════
+
+let selectedFabricPriceValue = 0; // No default — wait for fabric selection
+
+// Listen for fabric selection from the GSheet fabric selector
+document.addEventListener('fabricSelected', function(e) {
+  const detail = e.detail;
+  selectedFabricPriceValue = parseFloat(detail.price) || 0;
+
+  // Update hidden fields for cart line item properties
+  document.getElementById('selectedFabricName').value = detail.name || '';
+  document.getElementById('selectedFabricPrice').value = detail.price || '';
+  document.getElementById('selectedFabricSKU').value = detail.sku || '';
+  document.getElementById('selectedFabricCatalog').value = detail.catalog || '';
+
+  calculatePrice();
+});
+
+// ═══════════════════════════════════════════════
+// Get current selections
+// ═══════════════════════════════════════════════
+function getSelections() {
+  return {
+    shape:     document.querySelector('#shapeOptions .option-card.selected')?.dataset.value || 'rect',
+    fill:      document.querySelector('#fillOptions .option-card.selected')?.dataset.value || 'HighDensityFoam',
+    zipper:    document.querySelector('#zipperOptions .option-card.selected')?.dataset.value || 'BackLongSide',
+    piping:    document.querySelector('#pipingOptions .option-card.selected')?.dataset.value || 'no_pipe',
+    antiskid:  document.querySelector('#antiskidOptions .option-card.selected')?.dataset.value || 'no_anti_skid',
+    ties:      document.querySelector('#tiesOptions .option-card.selected')?.dataset.value || 'no_ties',
+    fabricPrice: selectedFabricPriceValue,
+    qty:       parseInt(document.getElementById('qtyInput').value) || 1,
+  };
+}
+
+// ═══════════════════════════════════════════════
+// PRICE CALCULATION
+// Mirrors the DPO formula chain exactly
+// ═══════════════════════════════════════════════
+function calculatePrice() {
+  const s = getSelections();
+
+  // ── 1. Dims — normalised per DPO formula inside getDimensions() ──
+  const cShape  = s.shape || 'rect';
+  const _dims   = getDimensions(cShape);
+  const cLength = _dims.cLength;
+  const cWidth  = _dims.cWidth;
+  let   cHeight = _dims.cHeight;
+
+  // ── 2. Shape markup ──
+  const shapeMarkupMap = {
+    rect:       0.1,
+    round:      15,
+    lshape:     15,
+    tshape:     20,
+    tapered:    20,
+    '90triangle': 10,
+    etriangle:  10,
+    trapezium:  15,
+    bolster:    10,
+    semiround:  10,
+  };
+  const shapeMarkup = shapeMarkupMap[cShape] ?? 0.1;
+
+  // Update shape hidden field for cart
+  const shapeNameMap = {
+    rect:         'Rectangle',
+    round:        'Round',
+    lshape:       'L-Shape',
+    tshape:       'T-Shape',
+    tapered:      'Tapered',
+    '90triangle': '90° Triangle',
+    etriangle:    'Equal Triangle',
+    trapezium:    'Trapezium',
+    bolster:      'Bolster',
+    semiround:    'Semi-Round',
+  };
+  const shapeHidden = document.getElementById('selectedShape');
+  if (shapeHidden) shapeHidden.value = shapeNameMap[cShape] ?? 'Rectangle';
+
+  // ── 3. Fabric cost ──
+  const fabricPrice = s.fabricPrice;
+  if (cHeight === 1) cHeight = 2;
+
+  const MAX = Math.max(cLength, cWidth);
+  const MIN = Math.min(cLength, cWidth);
+
+  const side1 = (cHeight * 2) + MAX;
+  const side2 = (cHeight * 2) + MIN;
+
+  const fabWidth = 54;
+  const fabWidthHalf = fabWidth / 2;
+
+  const greater54Calc = side1 < (fabWidth * 2) ? (4 * side2) : (6 * side2);
+
+  let fabLengthInches;
+  if (side1 <= fabWidthHalf) {
+    fabLengthInches = side2;
+  } else if (side1 > fabWidthHalf && side1 <= fabWidth) {
+    fabLengthInches = 2 * side2;
+  } else if (side2 > fabWidth) {
+    fabLengthInches = greater54Calc;
+  } else if (side2 <= fabWidthHalf) {
+    fabLengthInches = side1;
+  } else {
+    fabLengthInches = 2 * side1;
+  }
+
+  const fabLengthYards = 0.028 * fabLengthInches;
+  let price = shapeMarkup;
+  price = price + (fabLengthYards * fabricPrice);
+
+  // ── 4. Labor ──
+  const laborExtra = MAX <= 24 ? 8 : MAX <= 48 ? 12 : MAX <= 72 ? 16 : MAX <= 96 ? 20 : 25;
+  price = price + laborExtra;
+
+  // ── 5. Filling ──
+  const isCovers = s.fill === 'CoversOnly';
+  const isFiber  = s.fill === 'FiberFill';
+  const isDryfast = s.fill === 'DryFastFoam';
+  const isFoam   = s.fill === 'HighDensityFoam';
+
+  let foamMul = (isCovers || isFiber) ? 0
+    : MAX <= 12 ? 0.063
+    : MAX <= 18 ? 0.095
+    : MAX <= 36 ? 0.179
+    : MAX <= 48 ? 0.264
+    : MAX <= 60 ? 0.322
+    : MAX <= 72 ? 0.390
+    : MAX <= 84 ? 0.459
+    : MAX <= 96 ? 0.528
+    : 0.596;
+
+  if (isFoam) {
+    price = price + foamMul * MIN * cHeight;
+  } else if (isFiber) {
+    price = price + 0.004 * cHeight * cWidth * cLength;
+  } else if (isCovers) {
+    price = price + 0;
+  } else if (isDryfast) {
+    price = price + foamMul * MIN * cHeight * 1.4;
+  }
+
+  // ── 6. Piping ──
+  const noPipe = s.piping === 'no_pipe';
+  const pipeMul = noPipe ? 0 : MAX <= 24 ? 12 : MAX <= 48 ? 18 : MAX <= 72 ? 24 : MAX <= 96 ? 30 : 36;
+  price = price + pipeMul;
+
+  // ── 7. Ties ──
+  const noTies = s.ties === 'no_ties';
+  const ties2  = s.ties === 'ties_2';
+  const ties4  = s.ties === 'ties_4';
+  const ties8  = s.ties === 'ties_8';
+  const tiesMult = noTies ? 0 : ties2 ? 10 : ties4 ? 16 : ties8 ? 22 : 28;
+  price = price + tiesMult;
+
+  // ── 8. Anti-Skid ──
+  const noAntiSkid = s.antiskid === 'no_anti_skid';
+  const area = cLength * cWidth;
+  const skidMul = noAntiSkid ? 0 : (area * 0.0065);
+  if (skidMul === 0) {
+    price = price + 0;
+  } else if (skidMul < 7.5) {
+    price = price + 7.5;
+  } else {
+    price = price + skidMul;
+  }
+
+  // ── 9. Packaging ──
+  const packagingExtra = MAX <= 24 ? 3.2 : MAX <= 48 ? 4 : MAX <= 72 ? 5.6 : MAX <= 96 ? 6.4 : 8;
+  const packagingExtra01 = isCovers ? 4 : packagingExtra;
+  price = price + packagingExtra01;
+
+  // ── 10. Shipping ──
+  const volume = cLength * cHeight * cWidth;
+  const volumeCm = volume * 16.387064;
+  const volumeCompressed = volumeCm * 0.20;
+  const volumeCompressedAdj = volumeCompressed * 1.2;
+  const volumeWeight = volumeCompressedAdj / 5000;
+
+  const rs = volumeWeight <= 11 ? 800 : 700;
+  const cst = rs * volumeWeight;
+  const fcs = cst / 75;
+
+  const fabricWeight = Math.ceil(226.8 * fabLengthYards / 1000);
+  const kgcst = 1200;
+  const cst1 = kgcst * fabricWeight;
+  const cst2 = (cst1 / 75) * 1.2;
+
+  const fcs2 = fcs < cst2 ? cst2 : fcs;
+  const sur = (cLength > 45 && cWidth > 45) ? 35 : 0;
+
+  if (isFoam) {
+    price = price + fcs2 + sur;
+  } else if (isFiber) {
+    price = price + fcs2 + sur;
+  } else if (isCovers) {
+    price = price + cst2;
+  } else if (isDryfast) {
+    price = price + fcs2 + sur;
+  }
+
+  // ── 11. Base price reduction ──
+  if ((cLength === 10 || cLength === 8) && (cWidth === 10 || cWidth === 8)) {
+    price = price / 4;
+  }
+
+  // ── 12. Final markup ──
+  if ((cLength === 10 || cLength === 8) && (cWidth === 10 || cWidth === 8)) {
+    price = price * 2.05;
+  } else {
+    price = price * 2.255;
+  }
+
+  // Update display
+  const displayPrice = '$' + price.toFixed(2);
+  document.getElementById('priceDisplay').textContent = displayPrice;
+  document.getElementById('priceDisplayBottom').textContent = displayPrice;
+}
+
+// ═══════════════════════════════════════════════
+// Quantity
+// ═══════════════════════════════════════════════
+function changeQty(delta) {
+  const input = document.getElementById('qtyInput');
+  let val = parseInt(input.value) || 1;
+  val = Math.max(1, Math.min(99, val + delta));
+  input.value = val;
+}
+
+// ═══════════════════════════════════════════════
+// Initialise: show rect dimension panel and run first price calculation
+updateDimensionFields('rect');
+</script>
+
+<script>
+// FABRIC SELECTOR (converted from fabricsection.liquid)
+(function() {
+  // Make initialization globally accessible for cart popup
+  window.initGSFabricSelector = function() {
+    const wrapper = document.getElementById('GSFabricWrapper');
+    if (!wrapper) {
+      console.warn('GSFabricWrapper not found');
+      return;
+    }
+
+    // Prevent double initialization
+    if (wrapper.dataset.gsInitialized === 'true') {
+      
+      return;
+    }
+    wrapper.dataset.gsInitialized = 'true';
+
+    const CONFIG = {
+      DATA_URL: "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrT5ibXCigtzjNc07kLpm4SBsJmOo_xxCL906Uter7_59oihKTJnFPCWU9JmL43GAjJIfe4Z0Q0z7DStO3DEMMSv2GzGYlF94SoJP6inWy2VhqvsBM8Yr02JuCcH1eekcdJyAK2UTyVE61ZvIUPz3XEWOpcM-iP2lQxGgb1WsluI6iprquaDBT3qrSaGsZHeCCW9N9-0FmRnBcbsHTfBhUBFG-RfOLQRusYlc0Yal65pYdLAZgFHPXSW40vJl8P_zeCYSfStMclFDeBJ4i4CrzhZwsGokA&lib=M1cKnGgzMrw-uGdLmNcpdvvb40ZRUnSGk",
+      STOCK_THRESHOLD: 20,
+      CURRENCY_SYMBOL: "$",
+      PRICE_COLUMN: "Price",
+      DEFAULT_CATALOG: "Best Seller Indoor",
+      CATALOGS: "Best Seller Indoor,Best Seller Outdoor,Agora®,Sunbrella®,Sunbrella® Horizon,Orea,Cassia,New Royal,Chenille Soft,New Melody,Alesia,Fusion Prints,Prosperity,Bling Foils,Blue Sky,Cocoon Boucle,Comfort II,Comfort III,New Molfino,Velvet Retreat,Onella,Lizzo,Merino,Keiba,Kilim,Piano,Phantom,Sugar,Printed Florals,Lush chenille,Vivian checks,Your Own Fabric".split(',').map(c => c.trim()),
+      SHOW_CATALOG_FILTER: "true",
+      SEARCH_TEXT: "Search Fabrics by color, features, type or pattern",
+      USAGE_OPTIONS: "Indoor Only,Outdoor/Indoor".split(',').map(o => o.trim()),
+      FEATURES_OPTIONS: "Washable,Dry Clean,Pet Friendly,Kids Friendly,UV Friendly,Water Resistant,Stain Resistant,Water Repellent,Mold Resistant,Spot Cleaning,High Traffic,Odour Resistant,Anti-Bacterial,Flame Retardant".split(',').map(o => o.trim()),
+      COLOR_OPTIONS: "Beige,Grey,White,Black,Brown,Blue,Green,Red,Yellow,Orange,Pink,Purple,Violet".split(',').map(o => o.trim()),
+      PATTERN_OPTIONS: "Solid,Stripes,Floral,Pattern".split(',').map(o => o.trim()),
+      FABRIC_TYPE_OPTIONS: "Acrylic,Velvet,Polyolefin,Polyester,Jacquards,Chenille,Viscose,Linen Blend,Cotton Blend,Faux Leather,Suede".split(',').map(o => o.trim()),
+      FABRIC_TEXTURE_OPTIONS: "Canvas,Woven,Velvet,Polyolefin,Boucle,Chenille,Suede,Linen,Polyester,Cotton,Cotton Blend,Velvet,Faux Leather".split(',').map(o => o.trim())
+
+    };
+
+    let allFabricsData = null;
+    let filteredData = [];
+    let selectedFabricCard = null;
+    let selectedFabricData = null;
+    let imageObserver = null;
+    let searchDebounceTimer = null;
+    let activeBestsellerCatalog = null;
+let filters = {
+  features: [],
+  color: [],
+  pattern: [],
+  fabricType: [],
+  FabricTexture: [],
+  usage: []
+};
+
+    const instanceId = 'gs_' + Date.now();
+    const PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect fill=%27%23f0f0f0%27 width=%27200%27 height=%27200%27/%3E%3C/svg%3E';
+
+    function buildFilterOptions(options, filterType, idPrefix) {
+      return options.map((opt, idx) => `
+        <div class="gs-filter-option">
+          <input type="checkbox" id="${idPrefix}_${idx}" value="${opt}" data-filter="${filterType}">
+          <label for="${idPrefix}_${idx}">${opt}</label>
+        </div>
+      `).join('');
+    }
+
+    function initFilterOptions() {
+      wrapper.querySelectorAll('.gs-filter-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+            return;
+          }
+          
+          const checkbox = option.querySelector('input[type="checkbox"]');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+      });
+    }
+
+   wrapper.innerHTML = `
+  <div id="${instanceId}_loaderOverlay" class="gs-loader-overlay">
+    <div class="gs-loader-content">
+      <div class="gs-loader-spinner"></div>
+      <div class="gs-loader-text">Loading fabrics...</div>
+    </div>
+  </div>
+  
+  <div class="gs-top-bar">
+    <div class="gs-search-wrapper">
+      <input type="text" id="${instanceId}_searchInput" class="gs-search-input" placeholder="${CONFIG.SEARCH_TEXT}" />
+      <span class="gs-search-icon">🔍</span>
+    </div>
+  </div>
+      
+      <div class="gs-filters-bar">
+        
+        <select id="${instanceId}_catalogFilter" class="gs-catalog-filter ${CONFIG.SHOW_CATALOG_FILTER === 'false' ? 'gs-hidden' : ''}">
+          <option value="view_all">View All</option>
+          ${CONFIG.CATALOGS.map(cat => `<option ${cat === CONFIG.DEFAULT_CATALOG ? 'selected' : ''}>${cat}</option>`).join('')}
+        </select>
+        
+
+      </div>
+      
+<div id="${instanceId}_catalogDesc" class="gs-catalog-description"></div>
+
+<div id="${instanceId}_bestsellerButtons" class="gs-bestseller-buttons">
+  <button class="gs-bestseller-btn " data-catalog="Best Seller Indoor">
+    Best Seller Indoor
+  </button>
+  <button class="gs-bestseller-btn " data-catalog="Best Seller Outdoor">
+    Best Seller Outdoor
+  </button>
+</div>
+
+      <div class="gs-main-layout">
+        <div class="gs-content">
+          <div id="${instanceId}_fabricGrid" class="gs-fabric-grid"></div>
+          <div id="${instanceId}_resultInfo" class="gs-result-info"></div>
+        </div>
+      </div>
+    `;
+
+    const s = (v) => (v === undefined || v === null) ? "" : String(v);
+    const safeLower = (v) => s(v).trim().toLowerCase();
+    const parseStock = (v) => {
+      const num = parseFloat(s(v).replace(/[^0-9.\-]/g, ""));
+      return Number.isFinite(num) ? num : 0;
+    };
+    const parsePrice = (v) => {
+      const num = parseFloat(s(v).replace(/[^0-9.\-]/g, ""));
+      return Number.isFinite(num) ? num : 0;
+    };
+
+    function debounce(func, delay) {
+      return function(...args) {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    function showLoader() {
+      const loader = document.getElementById(`${instanceId}_loaderOverlay`);
+      if (loader) loader.classList.add('show');
+    }
+
+    function hideLoader() {
+      const loader = document.getElementById(`${instanceId}_loaderOverlay`);
+      if (loader) loader.classList.remove('show');
+    }
+
+    function initDropdowns() {
+      const dropdowns = wrapper.querySelectorAll('.gs-filter-dropdown');
+      
+      dropdowns.forEach(dropdown => {
+        const button = dropdown.querySelector('.gs-filter-button');
+        const menu = dropdown.querySelector('.gs-filter-dropdown-menu');
+        
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          
+          wrapper.querySelectorAll('.gs-filter-dropdown-menu').forEach(m => {
+            if (m !== menu) m.classList.remove('show');
+          });
+          wrapper.querySelectorAll('.gs-filter-button').forEach(b => {
+            if (b !== button) b.classList.remove('active');
+          });
+          
+          menu.classList.toggle('show');
+          button.classList.toggle('active');
+        });
+        
+        menu.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      });
+      
+      document.addEventListener('click', () => {
+        wrapper.querySelectorAll('.gs-filter-dropdown-menu').forEach(m => m.classList.remove('show'));
+        wrapper.querySelectorAll('.gs-filter-button').forEach(b => b.classList.remove('active'));
+      });
+    }
+
+    function updateFilterButtons() {
+const filterTypes = ['features', 'color', 'pattern', 'fabricType', 'FabricTexture', 'usage'];
+      
+      filterTypes.forEach(type => {
+        const button = document.getElementById(`${instanceId}_${type}Btn`);
+        if (!button) return;
+        
+        const count = filters[type].length;
+const labels = {
+  features: 'Features',
+  color: 'Color',
+  pattern: 'Pattern',
+  fabricType: 'Fabric Material',
+  FabricTexture: 'Fabric Texture',
+  usage: 'Usage'
+};
+        
+        if (count > 0) {
+          button.textContent = `${labels[type]} (${count})`;
+          button.style.fontWeight = 'bold';
+        } else {
+          button.textContent = labels[type];
+          button.style.fontWeight = '500';
+        }
+      });
+      
+      const hasFilters = Object.values(filters).some(arr => arr.length > 0);
+      const clearBtn = document.getElementById(`${instanceId}_clearFilters`);
+      if (clearBtn) {
+        if (hasFilters) {
+          clearBtn.classList.add('show');
+        } else {
+          clearBtn.classList.remove('show');
+        }
+      }
+    }
+
+    async function fetchAllFabricsOnce() {
+      if (allFabricsData) return allFabricsData;
+
+      try {
+        showLoader();
+        const response = await fetch(CONFIG.DATA_URL, { 
+          cache: "force-cache",
+          priority: "high"
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const result = await response.json();
+        const data = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+        
+        allFabricsData = data;
+        return data;
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw new Error("Failed to load fabric data");
+      } finally {
+        hideLoader();
+      }
+    }
+
+async function fetchCatalogData(catalogName) {
+  const allData = await fetchAllFabricsOnce();
+  if (!allData) return [];
+  
+  if (catalogName === "view_all") {
+    return allData.filter(item => {
+      const itemCatalog = s(item["Fabric Catalog Name"]);
+      
+      // If a bestseller button is active, show only that catalog
+      if (activeBestsellerCatalog) {
+        return itemCatalog === activeBestsellerCatalog;
+      }
+      
+      // Otherwise exclude "Best Seller Indoor" and "Best Seller Outdoor"
+      if (itemCatalog === "Best Seller Indoor" || itemCatalog === "Best Seller Outdoor") {
+        return false;
+      }
+      
+      return CONFIG.CATALOGS.includes(itemCatalog);
+    });
+  }
+  
+  return allData.filter(item => s(item["Fabric Catalog Name"]) === catalogName);
+}
+
+function updateBestsellerButtons(selectedCatalog) {
+  const buttonsContainer = document.getElementById(`${instanceId}_bestsellerButtons`);
+  if (!buttonsContainer) return;
+  
+  // Show buttons only when "view_all" is selected
+  if (selectedCatalog === "view_all") {
+    buttonsContainer.classList.add('show');
+  } else {
+    buttonsContainer.classList.remove('show');
+    activeBestsellerCatalog = null;
+  }
+  
+  // Update active state
+  const buttons = buttonsContainer.querySelectorAll('.gs-bestseller-btn');
+  buttons.forEach(btn => {
+    const catalog = btn.dataset.catalog;
+    if (catalog === activeBestsellerCatalog) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+    function getFilteredData(fullData, selectedCatalog) {
+      const searchInput = document.getElementById(`${instanceId}_searchInput`);
+      const searchTerm = safeLower(searchInput ? searchInput.value : '');
+
+      return fullData.filter((item) => {
+        const stock = parseStock(item["Todays Stock"]);
+        const name = safeLower(item["Fabric Name"]);
+        const catalog = s(item["Fabric Catalog Name"]);
+        
+        const itemColor = safeLower(item["Color"]);
+        const itemPattern = safeLower(item["Pattern"]);
+        const itemFeatures = safeLower(item["Features"]);
+        const itemFabricType = safeLower(item["Fabric Material"]);
+        const itemFabricTexture = safeLower(item["Fabric Texture"]);
+        
+        const matchesSearch = searchTerm === '' || 
+          name.includes(searchTerm) || 
+          itemColor.includes(searchTerm) || 
+          itemPattern.includes(searchTerm) ||
+          itemFeatures.includes(searchTerm) ||
+          itemFabricType.includes(searchTerm) ||
+          itemFabricTexture.includes(searchTerm) ;
+        
+        const matchesCatalog = (selectedCatalog === "view_all" && CONFIG.CATALOGS.includes(catalog)) || catalog === selectedCatalog;
+        const hasStock = stock >= CONFIG.STOCK_THRESHOLD;
+
+        const matchesFeatures = filters.features.length === 0 || 
+          filters.features.some(f => itemFeatures.includes(safeLower(f)));
+
+        const matchesColor = filters.color.length === 0 || 
+          filters.color.some(c => {
+            const colorLower = safeLower(c);
+            return itemColor === colorLower || itemColor.includes(colorLower);
+          });
+
+        const matchesPattern = filters.pattern.length === 0 || 
+          filters.pattern.some(p => safeLower(p) === itemPattern);
+
+        const matchesFabricType = filters.fabricType.length === 0 || 
+          filters.fabricType.some(ft => safeLower(ft) === itemFabricType);
+
+        const matchesFabricTexture = filters.FabricTexture.length === 0 || 
+          filters.FabricTexture.some(ftx => safeLower(ftx) === itemFabricTexture);
+
+        const itemUsage = safeLower(item["Usage"]);
+        const matchesUsage = filters.usage.length === 0 || 
+          filters.usage.some(u => safeLower(u) === itemUsage);
+
+       return matchesSearch && matchesCatalog && hasStock &&
+       matchesFeatures && matchesColor && matchesPattern && 
+       matchesFabricType && matchesFabricTexture && matchesUsage;
+      });
+    }
+
+    function selectFabric(fabricData, cardElement, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      if (selectedFabricCard) selectedFabricCard.classList.remove('selected');
+
+      const fabricName = s(fabricData["Fabric Name"]);
+      const fabricPrice = parsePrice(fabricData[CONFIG.PRICE_COLUMN] || fabricData["Price"]);
+      const fabricSKU = s(fabricData["Fabric SKU ID"]);
+      const fabricCatalog = s(fabricData["Fabric Catalog Name"]);
+
+      // Dispatch custom event for price calculator integration
+      wrapper.dispatchEvent(new CustomEvent('fabricSelected', {
+        bubbles: true,
+        detail: {
+          name: fabricName,
+          price: fabricPrice,
+          sku: fabricSKU,
+          catalog: fabricCatalog,
+          data: fabricData
+        }
+      }));
+
+      cardElement.classList.add('selected');
+      selectedFabricCard = cardElement;
+      selectedFabricData = fabricData;
+
+      // Save state to localStorage whenever fabric is selected
+      saveFabricStateToCache();
+
+      updateFeaturedSidebar(fabricData);
+    }
+
+    function updateFeaturedSidebar(fabricData) {
+      const featuredImg = document.getElementById(`${instanceId}_featuredImage`);
+      const featuredName = document.getElementById(`${instanceId}_featuredName`);
+      const featuredCatalog = document.getElementById(`${instanceId}_featuredCatalog`);
+
+      if (!featuredImg || !featuredName || !featuredCatalog) return;
+
+      const imgSrc = s(fabricData["Featured Image"]);
+      const name = s(fabricData["Fabric Name"]);
+      const catalog = s(fabricData["Fabric Catalog Name"]);
+
+      if (imgSrc) {
+        featuredImg.src = imgSrc;
+        featuredImg.style.display = 'block';
+      } else {
+        featuredImg.style.display = 'none';
+      }
+
+      featuredName.textContent = name;
+      featuredCatalog.textContent = catalog ? `From ${catalog}` : '';
+    }
+
+    function renderFabrics(data) {
+      const grid = document.getElementById(`${instanceId}_fabricGrid`);
+      if (!grid) return;
+
+      if (!data || data.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#999; padding:60px 20px;">No fabrics found matching your filters.</p>';
+        return;
+      }
+
+      let tooltipContainer = document.getElementById(`${instanceId}_tooltipContainer`);
+      if (!tooltipContainer) {
+        tooltipContainer = document.createElement('div');
+        tooltipContainer.id = `${instanceId}_tooltipContainer`;
+        tooltipContainer.className = 'gs-tooltip-container';
+        wrapper.appendChild(tooltipContainer);
+      }
+
+      let tooltip = document.getElementById(`${instanceId}_sharedTooltip`);
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = `${instanceId}_sharedTooltip`;
+        tooltip.className = 'gs-fabric-card-tooltip';
+        tooltip.innerHTML = `
+          <img src="${PLACEHOLDER}" alt="Fabric Preview">
+          <div class="gs-fabric-name-tooltip"></div>
+        `;
+        tooltipContainer.appendChild(tooltip);
+      }
+
+      const tooltipImg = tooltip.querySelector('img');
+      const tooltipName = tooltip.querySelector('.gs-fabric-name-tooltip');
+
+      const fragment = document.createDocumentFragment();
+
+      let activeTooltipCard = null;
+      let tooltipHideTimer = null;
+
+      const showTooltip = () => {
+        if (tooltipHideTimer) {
+          clearTimeout(tooltipHideTimer);
+          tooltipHideTimer = null;
+        }
+        tooltip.classList.add('show');
+      };
+
+      const hideTooltip = () => {
+        tooltipHideTimer = setTimeout(() => {
+          tooltip.classList.remove('show');
+          activeTooltipCard = null;
+        }, 300);
+      };
+
+      if (!tooltip.dataset.eventsAttached) {
+        tooltip.addEventListener('mouseenter', () => {
+          showTooltip();
+        });
+        
+        tooltip.addEventListener('mouseleave', () => {
+          hideTooltip();
+        });
+        
+        document.addEventListener('click', (e) => {
+          if (!tooltip.contains(e.target) && !e.target.closest('.gs-fabric-card')) {
+            tooltip.classList.remove('show');
+            activeTooltipCard = null;
+          }
+        });
+        
+        window.addEventListener('scroll', () => {
+          if (tooltip.classList.contains('show')) {
+            tooltip.classList.remove('show');
+            activeTooltipCard = null;
+          }
+        }, true);
+        
+        tooltip.dataset.eventsAttached = 'true';
+      }
+
+      let firstCard = null;
+      let firstItem = null;
+
+      function positionTooltip(card, imgSrc, name) {
+        const cardRect = card.getBoundingClientRect();
+        const tooltipWidth = 240;
+        const tooltipHeight = 300;
+        
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        
+        // Use Shopify CDN transformation for tooltip image (larger size for better quality)
+        tooltipImg.src = getShopifyResizedImageUrl(imgSrc, 500);
+        tooltipName.textContent = name;
+        
+        let left = cardRect.left + (cardRect.width / 2) - (tooltipWidth / 2);
+        let top = cardRect.top - tooltipHeight + 20;
+        
+        const spaceAbove = cardRect.top;
+        const spaceBelow = viewportHeight - cardRect.bottom;
+        
+        if (spaceAbove < tooltipHeight + 40 && spaceBelow > spaceAbove) {
+          top = cardRect.bottom + 5;
+          tooltip.setAttribute('data-position', 'bottom');
+        } else {
+          tooltip.setAttribute('data-position', 'top');
+        }
+        
+        if (left < 10) {
+          left = 10;
+        } else if (left + tooltipWidth > viewportWidth - 10) {
+          left = viewportWidth - tooltipWidth - 10;
+        }
+        
+        if (top < 10) {
+          top = 10;
+        }
+        
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        showTooltip();
+        activeTooltipCard = card;
+      }
+
+      // SHOPIFY CDN IMAGE TRANSFORMATION FUNCTION
+      function getShopifyResizedImageUrl(originalUrl, targetSize) {
+        try {
+          // Check if it's a Shopify CDN URL
+          if (!originalUrl.includes('cdn.shopify.com')) {
+            return originalUrl;
+          }
+          
+          // Parse the URL
+          const url = new URL(originalUrl);
+          const pathname = url.pathname;
+          
+          // Extract file extension
+          const lastDot = pathname.lastIndexOf('.');
+          if (lastDot === -1) return originalUrl;
+          
+          const pathWithoutExt = pathname.substring(0, lastDot);
+          const extension = pathname.substring(lastDot);
+          
+          // Create resized URL: add _WIDTHxHEIGHT before extension
+          // Cards use 240x240 (2x for 120px display)
+          // Tooltip uses 400x400 (2x+ for 180px display) for extra clarity
+          const resizedPath = `${pathWithoutExt}_${targetSize}x${targetSize}_crop_center${extension}`;
+          
+          // Reconstruct URL with resized path
+          const resizedUrl = `${url.origin}${resizedPath}${url.search}`;
+          
+          return resizedUrl;
+        } catch (e) {
+          console.warn('Failed to transform Shopify URL:', e);
+          return originalUrl;
+        }
+      }
+      
+      function loadHighQualityImage(imgElement, originalSrc) {
+        // Get Shopify CDN resized image URL (240x240 for crisp 2x rendering)
+        const resizedUrl = getShopifyResizedImageUrl(originalSrc, 240);
+        
+        // Load the properly sized image from Shopify CDN
+        const tempImg = new Image();
+        
+        tempImg.onload = function() {
+          imgElement.src = resizedUrl;
+          imgElement.classList.remove('gs-lazy-loading');
+        };
+        
+        tempImg.onerror = function() {
+          // Fallback: try different Shopify transformation format
+          const fallbackUrl = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'width=240&height=240&crop=center';
+          
+          const fallbackImg = new Image();
+          fallbackImg.onload = function() {
+            imgElement.src = fallbackUrl;
+            imgElement.classList.remove('gs-lazy-loading');
+          };
+          
+          fallbackImg.onerror = function() {
+            // Last fallback: use original image
+            imgElement.src = originalSrc;
+            imgElement.classList.remove('gs-lazy-loading');
+          };
+          
+          fallbackImg.src = fallbackUrl;
+        };
+        
+        tempImg.src = resizedUrl;
+      }
+
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      data.forEach((item, index) => {
+        const stock = parseStock(item["Todays Stock"]);
+        if (stock < CONFIG.STOCK_THRESHOLD) return;
+
+        const imgSrc = s(item["Fabric Image Link"]);
+        const name = s(item["Fabric Name"]);
+
+        const card = document.createElement("div");
+        card.className = "gs-fabric-card";
+        
+        const img = document.createElement('img');
+        img.src = PLACEHOLDER;
+        img.alt = name;
+        img.className = 'gs-lazy-loading';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.dataset.src = imgSrc;
+        
+        card.appendChild(img);
+
+        // Only add hover events on non-touch devices (desktop)
+        if (!isTouchDevice) {
+          card.addEventListener('mouseenter', (e) => {
+            positionTooltip(card, imgSrc, name);
+          });
+
+          card.addEventListener('mouseleave', () => {
+            hideTooltip();
+          });
+        }
+
+        // Click/tap handler - enhanced for mobile to show tooltip + select in one tap
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // On touch devices, show tooltip when selecting fabric (single tap does both!)
+          if (isTouchDevice) {
+            positionTooltip(card, imgSrc, name);
+          }
+          
+          selectFabric(item, card, e);
+        });
+        
+        fragment.appendChild(card);
+
+        if (!firstCard) {
+          firstCard = card;
+          firstItem = item;
+        }
+      });
+
+      grid.innerHTML = '';
+      grid.appendChild(fragment);
+
+      if (firstCard && firstItem && !selectedFabricCard) {
+        selectFabric(firstItem, firstCard, null);
+      }
+
+      // Use Shopify CDN image transformation for high quality
+      requestAnimationFrame(() => {
+        const images = grid.querySelectorAll('img[data-src]');
+        images.forEach(img => {
+          const originalSrc = img.dataset.src;
+          if (originalSrc) {
+            // Load with Shopify CDN transformation (240x240 for crisp 2x rendering)
+            loadHighQualityImage(img, originalSrc);
+            delete img.dataset.src;
+          }
+        });
+      });
+    }
+
+    function updateResultInfo() {
+      const info = document.getElementById(`${instanceId}_resultInfo`);
+      if (!info) return;
+      
+      const total = filteredData.length;
+      
+      if (total > 0) {
+        info.textContent = `Showing ${total} fabrics`;
+      } else {
+        info.textContent = '0 fabrics found';
+      }
+    }
+
+    function updateCatalogDescription(data, selectedCatalog) {
+      const descEl = document.getElementById(`${instanceId}_catalogDesc`);
+      if (!descEl) return;
+      
+      if (selectedCatalog === "view_all" || !data || data.length === 0) {
+        descEl.textContent = "";
+        descEl.style.display = "none";
+        return;
+      }
+      
+      const catalogItem = data.find(item => s(item["Fabric Catalog Name"]) === selectedCatalog);
+      if (catalogItem) {
+        const description = s(catalogItem["Fabric Catalog Description"]);
+        if (description) {
+          descEl.textContent = description;
+          descEl.style.display = "block";
+        } else {
+          descEl.style.display = "none";
+        }
+      }
+    }
+
+    async function loadFabrics() {
+      try {
+        showLoader();
+
+        const catalogFilter = document.getElementById(`${instanceId}_catalogFilter`);
+        const selectedCatalog = s(catalogFilter ? catalogFilter.value : '').trim();
+        updateBestsellerButtons(selectedCatalog);
+        const fullData = await fetchCatalogData(selectedCatalog);
+
+        if (!fullData || fullData.length === 0) {
+          hideLoader();
+          filteredData = [];
+          renderFabrics([]);
+          updateResultInfo();
+          updateCatalogDescription([], selectedCatalog);
+          return;
+        }
+
+        updateCatalogDescription(fullData, selectedCatalog);
+        filteredData = getFilteredData(fullData, selectedCatalog);
+
+        renderFabrics(filteredData);
+        updateResultInfo();
+        hideLoader();
+      } catch (e) {
+        console.error('Load error:', e);
+        hideLoader();
+        const grid = document.getElementById(`${instanceId}_fabricGrid`);
+        if (grid) {
+          grid.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">Failed to load fabrics. Please try again.</p>';
+        }
+      }
+    }
+
+    function updateFilters() {
+      filters.features = Array.from(wrapper.querySelectorAll('[data-filter="features"]:checked')).map(cb => cb.value);
+      filters.color = Array.from(wrapper.querySelectorAll('[data-filter="color"]:checked')).map(cb => cb.value);
+      filters.pattern = Array.from(wrapper.querySelectorAll('[data-filter="pattern"]:checked')).map(cb => cb.value);
+      filters.fabricType = Array.from(wrapper.querySelectorAll('[data-filter="fabricType"]:checked')).map(cb => cb.value);
+      filters.usage = Array.from(wrapper.querySelectorAll('[data-filter="usage"]:checked')).map(cb => cb.value);
+      filters.FabricTexture = Array.from(wrapper.querySelectorAll('[data-filter="FabricTexture"]:checked')).map(cb => cb.value);
+
+
+      updateFilterButtons();
+      loadFabrics();
+    }
+
+    function clearAllFilters() {
+      wrapper.querySelectorAll('[data-filter]').forEach(cb => {
+        if (cb.type === 'checkbox') cb.checked = false;
+      });
+
+      const searchInput = document.getElementById(`${instanceId}_searchInput`);
+      if (searchInput) searchInput.value = '';
+
+filters = {
+  features: [],
+  color: [],
+  pattern: [],
+  fabricType: [],
+  FabricTexture: [],
+  usage: []
+};
+activeBestsellerCatalog = null;
+      updateFilterButtons();
+      loadFabrics();
+    }
+
+    // ============================================================
+    // LOCALSTORAGE CACHE FUNCTIONS
+    // ============================================================
+    
+    function saveFabricStateToCache() {
+      try {
+        const state = {
+          selectedFabric: selectedFabricData,
+          selectedCatalog: document.getElementById(`${instanceId}_catalogFilter`)?.value || CONFIG.DEFAULT_CATALOG,
+          filters: filters,
+          searchTerm: document.getElementById(`${instanceId}_searchInput`)?.value || '',
+          timestamp: Date.now(),
+          config: CONFIG
+        };
+        
+        localStorage.setItem('gs_fabric_selector_state', JSON.stringify(state));
+        
+      } catch (e) {
+        console.warn('Failed to save fabric state:', e);
+      }
+    }
+
+    window.restoreGSFabricSelectorFromCache = function() {
+      try {
+        const cached = localStorage.getItem('gs_fabric_selector_state');
+        if (!cached) {
+          console.warn('No cached fabric state found');
+          return false;
+        }
+
+        const state = JSON.parse(cached);
+        
+        // Check if cache is recent (within 1 hour)
+        if (Date.now() - state.timestamp > 3600000) {
+          console.warn('Cached state is too old');
+          return false;
+        }
+
+        
+
+        // Restore filters
+        filters = state.filters || {
+          features: [],
+          color: [],
+          pattern: [],
+          fabricType: [],
+          usage: []
+        };
+
+        // Restore search term
+        const searchInput = document.getElementById(`${instanceId}_searchInput`);
+        if (searchInput && state.searchTerm) {
+          searchInput.value = state.searchTerm;
+        }
+
+        // Restore catalog selection
+        const catalogFilter = document.getElementById(`${instanceId}_catalogFilter`);
+        if (catalogFilter && state.selectedCatalog) {
+          catalogFilter.value = state.selectedCatalog;
+        }
+
+        // Restore filter checkboxes
+        Object.keys(filters).forEach(filterType => {
+          filters[filterType].forEach(value => {
+            const checkbox = wrapper.querySelector(`[data-filter="${filterType}"][value="${value}"]`);
+            if (checkbox) checkbox.checked = true;
+          });
+        });
+
+        updateFilterButtons();
+
+        // Reload with cached state
+        loadFabrics().then(() => {
+          // Re-select the previously selected fabric
+          if (state.selectedFabric) {
+            setTimeout(() => {
+              const cards = wrapper.querySelectorAll('.gs-fabric-card');
+              const fabricSKU = s(state.selectedFabric["Fabric SKU ID"]);
+              
+              filteredData.forEach((item, index) => {
+                if (s(item["Fabric SKU ID"]) === fabricSKU && cards[index]) {
+                  selectFabric(item, cards[index], null);
+                }
+              });
+            }, 500);
+          }
+        });
+
+        
+        return true;
+      } catch (e) {
+        console.error('Failed to restore fabric state:', e);
+        return false;
+      }
+    };
+
+    // Event listeners
+    const searchInput = document.getElementById(`${instanceId}_searchInput`);
+    if (searchInput) {
+      searchInput.addEventListener('input', debounce(() => loadFabrics(), 300));
+    }
+
+    const catalogFilter = document.getElementById(`${instanceId}_catalogFilter`);
+    if (catalogFilter && CONFIG.SHOW_CATALOG_FILTER === 'true') {
+      catalogFilter.addEventListener('change', () => clearAllFilters());
+    }
+
+    const clearBtn = document.getElementById(`${instanceId}_clearFilters`);
+    if (clearBtn) {
+      clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearAllFilters();
+      });
+    }
+
+    wrapper.querySelectorAll('[data-filter]').forEach(input => {
+      if (input.type === 'checkbox') {
+        input.addEventListener('change', updateFilters);
+      }
+    });
+
+    // Save state before page unload
+    window.addEventListener('beforeunload', () => {
+      saveFabricStateToCache();
+      
+      if (imageObserver) {
+        imageObserver.disconnect();
+        imageObserver = null;
+      }
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    });
+
+    // Initialize
+    initDropdowns();
+    initFilterOptions();
+    loadFabrics();
+
+    // Bestseller button handlers
+const bestsellerButtons = wrapper.querySelectorAll('.gs-bestseller-btn');
+bestsellerButtons.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const catalog = btn.dataset.catalog;
+    
+    // Toggle: if clicking active button, deactivate it
+    if (activeBestsellerCatalog === catalog) {
+      activeBestsellerCatalog = null;
+    } else {
+      activeBestsellerCatalog = catalog;
+    }
+    
+    updateBestsellerButtons('view_all');
+    loadFabrics();
+  });
+});
+
+    // Cleanup on wrapper removal
+    const cleanupObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node === wrapper || node.contains?.(wrapper)) {
+            if (imageObserver) {
+              imageObserver.disconnect();
+              imageObserver = null;
+            }
+            if (searchDebounceTimer) {
+              clearTimeout(searchDebounceTimer);
+            }
+            cleanupObserver.disconnect();
+          }
+        });
+      });
+    });
+    
+    if (wrapper.parentElement) {
+      cleanupObserver.observe(wrapper.parentElement, { childList: true, subtree: true });
+    }
+
+    
+  }; // End of window.initGSFabricSelector
+
+  // Auto-initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initGSFabricSelector);
+  } else {
+    window.initGSFabricSelector();
+  }
+
+  // Watch for dynamic insertion
+  const wrapperObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.id === 'GSFabricWrapper' || node.querySelector?.('#GSFabricWrapper')) {
+          setTimeout(() => {
+            if (typeof window.initGSFabricSelector === 'function') {
+              window.initGSFabricSelector();
+            }
+          }, 150);
+        }
+      });
+    });
+  });
+  
+  wrapperObserver.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+</body>
+</html>
